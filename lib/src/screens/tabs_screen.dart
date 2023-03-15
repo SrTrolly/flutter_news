@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:newsapp/src/screens/tab1_screen.dart';
+import 'package:newsapp/src/screens/tab2_screen.dart';
+import 'package:provider/provider.dart';
 
 class TabsScreen extends StatelessWidget {
   const TabsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const _Paginas(),
-      bottomNavigationBar: _Navegacion(),
+    return ChangeNotifierProvider(
+      create: (_) => _NavegacionModel(),
+      child: const Scaffold(
+        body: _Paginas(),
+        bottomNavigationBar: _Navegacion(),
+      ),
     );
   }
 }
@@ -19,9 +25,11 @@ class _Navegacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navegacionModel = Provider.of<_NavegacionModel>(context);
+
     return BottomNavigationBar(
-        currentIndex: 0,
-        onTap: (value) => print(value),
+        currentIndex: navegacionModel.paginaActual,
+        onTap: (value) => navegacionModel.paginaActual = value,
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.person_outline), label: "Para ti"),
@@ -38,27 +46,29 @@ class _Paginas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navegacionModel = Provider.of<_NavegacionModel>(context);
+
     return PageView(
+      controller: navegacionModel.pageControler,
       physics: const NeverScrollableScrollPhysics(),
-      children: [
-        Container(
-          color: Colors.red,
-        ),
-        Container(
-          color: Colors.green,
-        )
-      ],
+      children: const [Tab1Screen(), Tab2Screen()],
     );
   }
 }
 
 class _NavegacionModel extends ChangeNotifier {
   int _paginaActual = 0;
+  final PageController _pageController = PageController(initialPage: 0);
 
   int get paginaActual => _paginaActual;
 
   set paginaActual(int valor) {
+    _pageController.animateToPage(valor,
+        duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+
     _paginaActual = valor;
     notifyListeners();
   }
+
+  PageController get pageControler => _pageController;
 }
